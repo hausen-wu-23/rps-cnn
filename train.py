@@ -42,7 +42,7 @@ class Net():
         # frame: 7 x 7
         # strides: 3
         # depth: 8
-        self.model.add(layers.Conv2D(8, 7, strides = 3, input_shape = image_size, activation = 'relu'))
+        self.model.add(layers.Conv2D(8, 7, strides = 3, input_shape = (300, 300, 3), activation = 'relu'))
         # output size: 100 x 100 x 8
 
         # maxpool
@@ -55,7 +55,7 @@ class Net():
         # frame: 3 x 3
         # strides: 1
         # depth: 16
-        self.model.add(layers.Conv2D(16, 3, input_shape = image_size, activation = 'relu'))
+        self.model.add(layers.Conv2D(16, 3, input_shape = (300, 300, 3), activation = 'relu'))
         # output size: 98 x 98 x 16
 
         # maxpool
@@ -70,7 +70,7 @@ class Net():
         self.model.add(layers.Dense(256, activation = 'relu'))
         self.model.add(layers.Dense(64, activation = 'relu'))
         # values -> possibilities
-        self.model.add(layers.Dense(5, activation = 'softmax'))
+        self.model.add(layers.Dense(3, activation = 'softmax'))
 
         self.loss = losses.CategoricalCrossentropy()
         self.optimizer = optimizers.SGD(learning_rate = 0.0001)
@@ -91,7 +91,7 @@ print(net)
 net.model.fit(
     train,
     batch_size = 32,
-    epochs = 100,
+    epochs = 200,
     verbose = 2,
     validation_data = test,
     validation_batch_size = 32,
