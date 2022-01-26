@@ -1,33 +1,38 @@
 import tensorflow.keras.preprocessing as preprocessing
+import tensorflow.keras.utils as utils
 import tensorflow.keras.models as models
 import tensorflow.keras.layers as layers
 import tensorflow.keras.losses as losses
 import tensorflow.keras.optimizers as optimizers
 
-train = preprocessing.image_dataset_from_directory(
+train = utils.image_dataset_from_directory(
     'data/train',
     label_mode = 'categorical',
     class_names = None,
     image_size = (300, 300),
     shuffle = True,
     seed = 39,
+    validation_split = 0.3,
+    subset = 'training',
 )
 
-validation = preprocessing.image_dataset_from_directory(
-    'data/validation',
+test = utils.image_dataset_from_directory(
+    'data/test',
     label_mode = 'categorical',
     class_names = None,
     image_size = (300, 300),
     shuffle = True,
     seed = 39,
+    validation_split = 0.3,
+    subset = 'validation',
 )
 
-test = preprocessing.image_dataset_from_directory(
-    'data/test',
-    label_mode = 'categorical',
-    class_names = None,
-    image_size = (300, 300),
-)
+# test = preprocessing.image_dataset_from_directory(
+#     'data/test',
+#     label_mode = 'categorical',
+#     class_names = None,
+#     image_size = (300, 300),
+# )
 
 class Net():
     def __init__(self, image_size):
@@ -53,4 +58,41 @@ class Net():
         self.model.add(layers.Conv2D(16, 3, input_shape = image_size, activation = 'relu'))
         # output size: 98 x 98 x 16
 
-        
+        # maxpool
+        # frame: 2x2
+        self.model.add(layers.MaxPool2D(pool_size=2))
+        # output size: 49 x 49 x 16
+
+        self.model.add(layers.Flatten())
+        # output size: 38416
+        self.model.add(layers.Dense(2048, activation = 'relu'))
+        self.model.add(layers.Dense(1024, activation = 'relu'))
+        self.model.add(layers.Dense(256, activation = 'relu'))
+        self.model.add(layers.Dense(64, activation = 'relu'))
+        # values -> possibilities
+        self.model.add(layers.Dense(5, activation = 'softmax'))
+
+        self.loss = losses.CategoricalCrossentropy()
+        self.optimizer = optimizers.SGD(learning_rate = 0.0001)
+        self.model.compile(
+            loss = self.loss,
+            optimizer = self.optimizer,
+            metrics = ['accuracy'],
+        )
+
+    def __str__(self):
+        self.model.summary()
+        return ""
+
+
+net = Net((300, 300, 3))
+print(net)
+
+net.model.fit(
+    train,
+    batch_size = 32,
+    epochs = 100,
+    verbose = 2,
+    validation_data = test,
+    validation_batch_size = 32,
+)
