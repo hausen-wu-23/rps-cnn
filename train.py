@@ -3,7 +3,9 @@ import tensorflow.keras.utils as utils
 import tensorflow.keras.models as models
 import tensorflow.keras.layers as layers
 import tensorflow.keras.losses as losses
+import tensorflow.keras.callbacks as callbacks
 import tensorflow.keras.optimizers as optimizers
+import os
 
 train = utils.image_dataset_from_directory(
     'data/train',
@@ -88,11 +90,25 @@ class Net():
 net = Net((300, 300, 3))
 print(net)
 
+checkpoint_path = "./cp.ckpt"
+checkpoint_dir = os.path.dirname(checkpoint_path)
+
+# save model every 10 epoch
+cp_callback = callbacks.ModelCheckpoint(
+    filepath=checkpoint_path, 
+    verbose = 1,
+    save_weight_only = True,
+    save_freq = 'epoch',
+    )
+
 net.model.fit(
     train,
     batch_size = 32,
-    epochs = 200,
+    epochs = 100,
     verbose = 2,
     validation_data = test,
     validation_batch_size = 32,
+    callbacks = [cp_callback],
 )
+
+net.model.save()
