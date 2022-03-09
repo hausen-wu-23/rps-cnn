@@ -90,16 +90,19 @@ class Net():
 net = Net((300, 300, 3))
 print(net)
 
-checkpoint_path = "./cp.ckpt"
-checkpoint_dir = os.path.dirname(checkpoint_path)
+# checkpoint_path = './cp.ckpt'
+# checkpoint_dir = os.path.dirname(checkpoint_path)
 
 # save model every 10 epoch
-cp_callback = callbacks.ModelCheckpoint(
-    filepath=checkpoint_path, 
-    verbose = 1,
-    save_weight_only = True,
-    save_freq = 'epoch',
-    )
+# cp_callback = callbacks.ModelCheckpoint(
+#     filepath=checkpoint_path, 
+#     verbose = 1,
+#     save_weight_only = True,
+#     # saves every 10 epochs
+#     save_freq = 1 * 32,
+#     )
+
+# net.model.load_weights('./cp.ckpt')
 
 net.model.fit(
     train,
@@ -108,7 +111,7 @@ net.model.fit(
     verbose = 2,
     validation_data = test,
     validation_batch_size = 32,
-    callbacks = [cp_callback],
+    # callbacks = [cp_callback],
 )
 
-net.model.save()
+net.model.save('./')
