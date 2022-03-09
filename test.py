@@ -7,12 +7,12 @@ import time
 import imutil
 import mahotas as mh
 
-# model = tf.keras.models.load_model('results')
-# # img = tf.io.read_file('data/test/rock/testrock01-18.png')
-# # tensor = tf.io.decode_image(img, channels=3, dtype=tf.dtypes.float32)
-# # tensor = tf.image.resize(tensor, (120, 120))
-# # input_tensor = tf.expand_dims(tensor, axis=0)
-# class_name = ['paper', 'rock', 'scissors']
+model = tf.keras.models.load_model('results')
+# img = tf.io.read_file('data/test/rock/testrock01-18.png')
+# tensor = tf.io.decode_image(img, channels=3, dtype=tf.dtypes.float32)
+# tensor = tf.image.resize(tensor, (120, 120))
+# input_tensor = tf.expand_dims(tensor, axis=0)
+class_name = ['paper', 'rock', 'scissors']
 
 mirror=True
 cam = cv2.VideoCapture(0)
@@ -28,6 +28,7 @@ while True:
 
     # resize original image for displaying
     img = imutil.resize(img.copy(), width = 500, height = 500)
+    original = img.copy()
 
     # image processing
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -64,6 +65,8 @@ while True:
         # set those pixels to white
         img[black_pixels] = [255, 255, 255]
 
+        cv2.drawContours(original, cnts, -1, (0, 0, 255), 2)
+
 
     # convert colour back 
     edged = cv2.cvtColor(edged, cv2.COLOR_GRAY2BGR)
@@ -74,10 +77,15 @@ while True:
     cTime = time.time()
     fps = 1 / (cTime - pTime)
     pTime = cTime
-    cv2.putText(edged, f'FPS:{int(fps)}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1)
+    cv2.putText(img, f'FPS:{int(fps)}', (350, 30), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 255), 1)
+    
+    input_img = imutil.resize(img, 120, 120)
+    input_tensor = tf.expand_dims(input_img, axis=0)
+    result = model(input_tensor)
+    cv2.putText(img, class_name[np.argmax(result)], (350, 60), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 255), 1)
 
     # stacking original and edged
-    display= np.hstack([edged, blurred, img])
+    display= np.hstack([original, blurred, edged, img])
 
     cv2.imshow("display", display)
 
