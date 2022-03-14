@@ -7,7 +7,7 @@ import time
 import imutil
 import mahotas as mh
 
-model = tf.keras.models.load_model('results')
+model = tf.keras.models.load_model('model_new')
 # img = tf.io.read_file('data/test/rock/testrock01-18.png')
 # tensor = tf.io.decode_image(img, channels=3, dtype=tf.dtypes.float32)
 # tensor = tf.image.resize(tensor, (120, 120))
@@ -27,9 +27,17 @@ while True:
         img = cv2.flip(img, 1)
 
     # resize original image for displaying
-    img = imutil.resize(img.copy(), width = 500, height = 500)
-    original = img.copy()
+    wl = int(img.shape[1] / 2 - 350)
+    wr = int(img.shape[1] / 2 + 350)
+    ht = int(img.shape[1] / 2 - 200)
+    hb = int(img.shape[1] / 2 + 200)
+    img = img.copy()[wl:wr, ht:hb]
 
+    img = imutil.resize(img, 500, 500)
+
+    img = imutil.rotate(img, 90)
+
+    original = img.copy()
     # image processing
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -41,7 +49,7 @@ while True:
 
 
     edged = cv2.Canny(blurred, 30, 150)
-    cv2.line(edged, (1, 498), (498, 498), 255, thickness=1)
+    cv2.line(edged, (498, 1), (498, 498), 255, thickness=1)
     
     (cnts, _) = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     
@@ -63,7 +71,7 @@ while True:
         )
 
         # set those pixels to white
-        img[black_pixels] = [255, 255, 255]
+        img[black_pixels] = [0, 255, 0]
 
         cv2.drawContours(original, cnts, -1, (0, 0, 255), 2)
 
@@ -82,6 +90,7 @@ while True:
     input_img = imutil.resize(img, 120, 120)
     input_tensor = tf.expand_dims(input_img, axis=0)
     result = model(input_tensor)
+    print(result)
     cv2.putText(img, class_name[np.argmax(result)], (350, 60), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 255), 1)
 
     # stacking original and edged
